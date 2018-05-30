@@ -1,0 +1,70 @@
+1.idea新建一个gradle项目
+
+2.在src->main->java新建一个测试类 。这里我是简单测试JSONObject
+
+源码如下
+import org.json.JSONObject;
+
+public class jsontest {
+    public static void main(String[] args) {
+        createJson();
+    }
+
+    private static void createJson() {
+        JSONObject obj = new JSONObject();
+        obj.put("name", "John");
+        obj.put("sex", "male");
+        obj.put("age", 22);
+        obj.put("is_student", true);
+        obj.put("hobbies", new String[] {"hiking", "swimming"});
+        //调用toString()方法可直接将其内容打印出来
+        System.out.println(obj.toString());
+    }
+}
+
+
+
+3.在build.gradle引入json依赖
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'org.json', name: 'json', version: '20180130'
+}
+
+
+4.本地运行程序后，确认程序正常输出无误后，开始着手打包
+1）在build.gradle加入打包代码：
+apply plugin: 'idea'
+
+jar {
+    String someString = ''
+    configurations.runtime.each {someString = someString + " lib\\"+it.name}
+    manifest {
+        attributes 'Main-Class': 'jsontest'  //要打包的类名
+        attributes 'Class-Path': someString
+    }
+}
+
+//清除上次的编译过的文件
+task clearPj(type:Delete){
+    delete 'build','target'
+}
+
+task copyJar(type:Copy){
+    from configurations.runtime
+    into ('build/libs/lib')   //jar包输出目录   
+
+}
+
+//把JAR复制到目标目录
+task release(type: Copy,dependsOn: [build,copyJar]) {
+//    from  'conf'
+//    into ('build/libs/eachend/conf') // 目标位置
+}
+
+2）点击View->Tool Windows->Gradle->Tasks->other->relaese会执行gradle打包程序
+当出现Build successed表示打包成功。在项目目录下的 build/libs/下会出现该jar包和一个lib目录，
+lib目录放的是该程序所依赖的jar包。
+
+
+
+
